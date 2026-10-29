@@ -1,0 +1,530 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Measurements Revision Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab-bench pages — sticky spec-referenced tab strip; each topic = oscilloscope-style sim + breakdown side by side, flip-card questions beneath. */
+:root{
+  --paper:#f4f7f6; --surface:#ffffff; --ink:#16212c; --muted:#56636f; --line:#d5dde2; --grid:#e6edf0;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --wave2:#cf5c17; --node:#c2263d; --good:#1b7a4c; --good-soft:#e2f3ea; --warn-soft:#fbeee4;
+  --f-display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:28px 14px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4.4vw,42px);line-height:1.08;margin:6px 0 8px;text-wrap:balance;letter-spacing:-.01em}
+h1 .sig{display:inline-block;vertical-align:middle;margin-left:6px}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+h2{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0 0 8px}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-block:8px 0}
+.tab{flex:0 0 auto;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:8px 14px 10px;border-radius:8px 8px 0 0;text-align:left;display:flex;flex-direction:column;gap:1px;position:relative;top:1px}
+.tab .ref{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em}
+.tab .nm{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--ink)}
+.tab:hover .nm{color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--accent)}
+.tab[aria-selected="true"] .nm{color:var(--accent)}
+.tab.practice .nm::before{content:"✎ ";}
+.tab:focus-visible,button:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:22px 60px}
+.panel-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 20px;margin-bottom:18px}
+.panel-head p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+
+.scope{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.scope-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.scope canvas{display:block;width:100%}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px;padding:14px 14px 4px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.ctl label output{font-family:var(--f-mono);color:var(--ink);font-size:13px}
+.ctl input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0}
+.toggles{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.check{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:6px 4px}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:12px}
+.readout div{background:var(--surface);padding:10px 12px}
+.readout dt{font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:2px 0 0;font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums}
+.status{padding:10px 14px;font-size:14px;border-top:1px solid var(--line)}
+.status b{font-family:var(--f-display)}
+.pause{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:12px;font-family:var(--f-mono);padding:3px 10px;border-radius:6px;cursor:pointer}
+
+.notes{display:flex;flex-direction:column;gap:16px;min-width:0}
+.eqbox{background:var(--accent-soft);border-radius:10px;padding:12px 14px}
+.eqbox h3{font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.eq{font-family:var(--f-mono);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 22px}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:12px;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;margin-top:1px}
+.traps{background:var(--warn-soft);border-radius:10px;padding:12px 14px}
+.traps h3{color:var(--wave2);font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.traps ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.try{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.try b{color:var(--ink)}
+
+.qhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin:36px 0 12px;border-top:1px solid var(--line);padding-top:22px}
+.qhead p{margin:0;color:var(--muted);font-size:14px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media (max-width:420px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.qcard.flipped{border-color:var(--good);background:linear-gradient(var(--good-soft),var(--good-soft)) top/100% 4px no-repeat, var(--surface)}
+.qmeta{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.qmeta .mk{color:var(--accent)}
+.qcard.flipped .qmeta .side{color:var(--good)}
+.qbody{flex:1;min-width:0}
+.qbody p{margin:0 0 8px}
+.qbody p:last-child{margin-bottom:0}
+.qbody ol,.qbody ul{margin:4px 0 8px;padding-left:20px}
+.qbody .opts{list-style:upper-alpha;padding-left:24px}
+.ans .work{font-family:var(--f-mono);font-size:13.5px;background:var(--paper);border-radius:8px;padding:8px 10px;margin:6px 0;overflow-x:auto;white-space:pre-wrap}
+.ans .final{font-weight:700;color:var(--good)}
+.flip{align-self:flex-start;border:1px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer}
+.flip:hover{background:var(--accent);color:var(--surface)}
+.qcard.flipped .flip{border-color:var(--good);color:var(--good)}
+.qcard.flipped .flip:hover{background:var(--good);color:var(--surface)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tally{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.ghost{border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:13px;padding:5px 12px;border-radius:8px;cursor:pointer}
+.tagline{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+sub,sup{font-size:.72em;line-height:0}
+footer{color:var(--muted);font-size:13px;padding-block:0 40px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+
+.extra{padding:12px 14px 2px;display:flex;flex-direction:column;gap:10px}
+.extra select,.extra input[type=number],.extra input[type=text]{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);max-width:100%}
+.extra .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.extra .row label{font-size:14px;color:var(--muted)}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--surface);font:inherit;font-size:14px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer}
+.btn.alt{background:none;color:var(--accent)}
+.mini{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mini th,.mini td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
+.mini th{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:500}
+.tblwrap{overflow-x:auto}
+.ok{color:var(--good);font-weight:700}.bad{color:var(--node);font-weight:700}
+.crumb{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-decoration:none}
+.crumb:hover{color:var(--accent)}
+</style>
+<div id="app"></div>
+<script>
+/* ---------- shared helpers ---------- */
+const $=id=>document.getElementById(id);
+const sims={},Q={},TOPICS=[];let SECTION={};
+let C={};
+function readTokens(){const s=getComputedStyle(document.documentElement);
+  ['paper','surface','ink','muted','line','grid','accent','accent-soft','wave2','node','good'].forEach(n=>C[n]=s.getPropertyValue('--'+n).trim());}
+function hexRgb(h){h=(h||'#000').replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function alpha(hex,a){const[r,g,b]=hexRgb(hex);return `rgba(${r},${g},${b},${a})`}
+function nmRgb(nm){let r=0,g=0,b=0;
+  if(nm<440){r=-(nm-440)/40;b=1}else if(nm<490){g=(nm-440)/50;b=1}else if(nm<510){g=1;b=-(nm-510)/20}
+  else if(nm<580){r=(nm-510)/70;g=1}else if(nm<645){r=1;g=-(nm-645)/65}else{r=1}
+  let f=nm<420?0.3+0.7*(nm-380)/40:nm>680?0.3+0.7*(780-nm)/100:1;
+  return [Math.round(255*r*f),Math.round(255*g*f),Math.round(255*b*f)];}
+const rgbStr=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const fmt=(x,d=2)=>Number(x).toFixed(d);
+const SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
+function sci(x,d=2){if(!isFinite(x))return '—';if(x===0)return'0';let e=Math.floor(Math.log10(Math.abs(x)));let m=x/10**e;if(Math.abs(+m.toFixed(d))>=10){m/=10;e++}
+  if(e>=-2&&e<=3)return (+x.toPrecision(d+1)).toString();
+  return `${m.toFixed(d)} × 10${String(e).replace('-','⁻').replace(/\d/g,c=>SUP[c])}`}
+function sizeCanvas(c,aspect,minH){
+  const w=c.clientWidth||c.parentElement.clientWidth||600; const h=Math.max(minH||0,Math.round(w*aspect));
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(c._w!==w||c._h!==h){c.style.height=h+'px';c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c._w=w;c._h=h}
+  const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function bg(ctx,w,h,grid=true){ctx.fillStyle=C.surface;ctx.fillRect(0,0,w,h);if(!grid)return;ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0.5;x<w;x+=20){ctx.moveTo(x,0);ctx.lineTo(x,h)}for(let y=0.5;y<h;y+=20){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();}
+function label(ctx,t,x,y,col,align='center',size=12,weight=500){ctx.fillStyle=col||C.ink;ctx.font=`${weight} ${size}px "JetBrains Mono", ui-monospace, monospace`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x,y)}
+function dot(ctx,x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+function line(ctx,x1,y1,x2,y2,col,w=1.5,dash){ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrowHead(ctx,x,y,ang,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s*Math.cos(ang-0.4),y-s*Math.sin(ang-0.4));ctx.lineTo(x-s*Math.cos(ang+0.4),y-s*Math.sin(ang+0.4));ctx.closePath();ctx.fill()}
+function arrow(ctx,x1,y1,x2,y2,col,w=2,head=9){line(ctx,x1,y1,x2,y2,col,w);if(Math.hypot(x2-x1,y2-y1)>2)arrowHead(ctx,x2,y2,Math.atan2(y2-y1,x2-x1),head,col)}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+/* graph helper: box {x,y,w,h} in px, ranges [min,max] */
+function Plot(ctx,box,xr,yr){const P={
+  X:v=>box.x+(v-xr[0])/(xr[1]-xr[0])*box.w, Y:v=>box.y+box.h-(v-yr[0])/(yr[1]-yr[0])*box.h,
+  axes(xlab,ylab,xt=[],yt=[],xf=v=>v,yf=v=>v){ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();
+    const y0=yr[0]<=0&&yr[1]>=0?P.Y(0):box.y+box.h, x0=xr[0]<=0&&xr[1]>=0?P.X(0):box.x;
+    ctx.moveTo(box.x,y0);ctx.lineTo(box.x+box.w,y0);ctx.moveTo(x0,box.y);ctx.lineTo(x0,box.y+box.h);ctx.stroke();
+    xt.forEach(v=>{const x=P.X(v);line(ctx,x,y0,x,y0+4,C.muted,1);label(ctx,xf(v),x,y0+13,C.muted,'center',10)});
+    yt.forEach(v=>{const y=P.Y(v);line(ctx,x0-4,y,x0,y,C.muted,1);label(ctx,yf(v),x0-7,y,C.muted,'right',10)});
+    if(xlab)label(ctx,xlab,box.x+box.w,y0+(y0>box.y+box.h-20?-10:26),C.muted,'right',10);
+    if(ylab)label(ctx,ylab,x0+6,box.y-8,C.muted,'left',10);},
+  curve(f,col,w=2,a=xr[0],b=xr[1],n=200){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();let first=true;
+    for(let i=0;i<=n;i++){const x=a+(b-a)*i/n,y=f(x);if(!isFinite(y)){first=true;continue}const py=Math.max(box.y-2,Math.min(box.y+box.h+2,P.Y(y)));first?ctx.moveTo(P.X(x),py):ctx.lineTo(P.X(x),py);first=false}ctx.stroke();},
+  pts(arr,col,w=2){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();arr.forEach((p,i)=>i?ctx.lineTo(P.X(p[0]),P.Y(p[1])):ctx.moveTo(P.X(p[0]),P.Y(p[1])));ctx.stroke();}
+ };return P;}
+function segVal(id){const b=document.querySelector(`#${id} button[aria-pressed="true"]`);return b?b.dataset.v:null}
+function setSeg(id,v){document.querySelectorAll(`#${id} button`).forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+const num=id=>+$(id).value;
+function setOut(id,txt){const o=$(id+'-o');if(o)o.textContent=txt}
+function setLabel(id,txt){const l=document.querySelector(`label[for="${id}"]`);if(l)l.firstChild.textContent=txt+' '}
+function topic(t){TOPICS.push(t)}
+
+// TITLE: Measurements Revision Lab
+SECTION={code:'Section 3.1 Measurements and their errors',name:'measurements and errors',title:'Measurements Revision Lab',
+ lede:'The practical skills behind every other topic: errors, uncertainties, graphs, units and reading instruments. Each tab has an interactive tool, a step-by-step breakdown and questions with hidden answers.'};
+
+/* ===== ERRORS ===== */
+topic({id:'errors',ref:'3.1.2',name:'Errors & accuracy',short:'Errors',eyebrow:'Limitation of physical measurements',title:'Random and systematic errors',
+ intro:'Ten students measure g. Change the size of the random error and add a systematic error, then see how precision and accuracy change.',
+ bar:'readings of g / m s⁻² · accepted value 9.81',aspect:0.5,minH:230,
+ controls:[{id:'er-rand',label:'Random error size',min:0,max:0.3,step:0.01,value:0.10,fmt:v=>'±'+fmt(v)},
+  {id:'er-sys',label:'Systematic error',min:-0.4,max:0.4,step:0.02,value:0,fmt:v=>(v>0?'+':'')+fmt(v)},
+  {id:'er-n',label:'Number of readings',min:3,max:20,step:1,value:8,fmt:v=>v}],
+ extra:`<div class="row"><button class="btn alt" type="button" id="er-new">Take new readings</button></div>`,
+ readouts:[{id:'er-mean',label:'mean'},{id:'er-unc',label:'uncertainty (½ range)'},{id:'er-pu',label:'% uncertainty'},{id:'er-pd',label:'% difference from 9.81'}],status:true,
+ eqs:['uncertainty ≈ ½ × range','% uncertainty = (uncertainty ÷ value) × 100','% difference = |value − accepted| ÷ accepted × 100'],
+ steps:['<b>Random errors</b> make readings scatter unpredictably either side of the true value (reaction time, judging when something stops). Repeating and averaging reduces their effect.',
+  '<b>Systematic errors</b> shift every reading the same way by the same amount (zero error, miscalibrated meter, parallax from the same position). Repeating does <b>not</b> remove them.',
+  '<b>Precise</b> means repeated readings agree closely (small spread). <b>Accurate</b> means close to the true value.',
+  'Estimate the uncertainty in a set of repeats as <b>half the range</b>, ignoring clear anomalies.',
+  '<b>Resolution</b> is the smallest change an instrument can show. <b>Repeatable</b>: same person, same method, same result. <b>Reproducible</b>: different person or method, same result.'],
+ traps:['Saying repeating readings "reduces systematic error". It doesn\'t.','Confusing precision (spread) with accuracy (closeness to true value).','Quoting uncertainty to too many significant figures: 1 or 2 s.f. is enough.'],
+ tryThis:'set random error to ±0.02 and systematic to +0.30. Are the readings precise? Are they accurate?'});
+sims.errors=(()=>{let z=[];const g0=9.81;
+  function regen(n){z=[];for(let i=0;i<n;i++){const u=Math.random()||0.5,v=Math.random();z.push(Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v))}}
+  let R=[];
+  function readings(){const r=num('er-rand'),s=num('er-sys'),n=num('er-n');if(z.length!==n){while(z.length<n){const u=Math.random()||.5,v=Math.random();z.push(Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v))}z.length=n}
+    R=z.map(q=>Math.round((g0+s+r*q*0.6)*100)/100);}
+  return{init(){regen(8);$('er-new').addEventListener('click',()=>{regen(num('er-n'));this.update()})},
+   update(){readings();const n=R.length,mean=R.reduce((a,b)=>a+b,0)/n,mx=Math.max(...R),mn=Math.min(...R),u=(mx-mn)/2,pu=u/mean*100,pd=Math.abs(mean-g0)/g0*100;
+    $('er-mean').textContent=fmt(mean)+' m s⁻²';$('er-unc').textContent='± '+fmt(u)+' m s⁻²';$('er-pu').textContent=fmt(pu,1)+' %';$('er-pd').textContent=fmt(pd,1)+' %';
+    const precise=pu<1,accurate=pd<1||(Math.abs(mean-g0)<=u);
+    $('errors-status').innerHTML=precise&&accurate?'<b>Precise and accurate.</b> Readings agree closely and the mean is close to 9.81.':
+      precise?'<b>Precise but not accurate.</b> Readings agree closely but the mean is shifted: a sign of systematic error, e.g. a zero error.':
+      accurate?'<b>Accurate but not precise.</b> The mean is close to 9.81 but the readings are widely spread: large random errors.':
+      '<b>Neither precise nor accurate.</b> Large spread and a shifted mean.';},
+   draw(ctx,w,h){bg(ctx,w,h);const P=Plot(ctx,{x:30,y:30,w:w-60,h:h-80},[9.2,10.4],[0,1]);const y0=P.Y(0);
+    line(ctx,30,y0,w-30,y0,C.muted,1);for(let v=9.2;v<=10.401;v+=0.1){const x=P.X(v);line(ctx,x,y0,x,y0+5,C.muted,1);if(Math.round(v*10)%2===0)label(ctx,v.toFixed(1),x,y0+16,C.muted,'center',10)}
+    const xt=P.X(g0);line(ctx,xt,26,xt,y0,C.good,2,[5,4]);label(ctx,'accepted 9.81',xt,16,C.good,'center',11);
+    const stack={};R.forEach(v=>{const k=Math.round(v*50);stack[k]=(stack[k]||0)+1;const x=P.X(Math.min(10.4,Math.max(9.2,v)));dot(ctx,x,y0-10-(stack[k]-1)*13,5.5,C.accent)});
+    if(R.length){const mean=R.reduce((a,b)=>a+b,0)/R.length,x=P.X(mean);ctx.fillStyle=C.wave2;ctx.beginPath();ctx.moveTo(x,y0+26);ctx.lineTo(x-7,y0+38);ctx.lineTo(x+7,y0+38);ctx.fill();label(ctx,'mean',x,y0+47,C.wave2,'center',10);
+     const a=P.X(Math.min(...R)),b=P.X(Math.max(...R)),by=Math.max(40,y0-30-Math.max(...Object.values(stack))*13);ctx.strokeStyle=C.muted;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(a,by+5);ctx.lineTo(a,by);ctx.lineTo(b,by);ctx.lineTo(b,by+5);ctx.stroke();label(ctx,'range',(a+b)/2,by-9,C.muted,'center',10)}}
+  }})();
+Q.errors=[
+ {m:2,q:`<p>Explain the difference between a <b>precise</b> set of measurements and an <b>accurate</b> set.</p>`,a:`<p><b>Precise:</b> repeated measurements are close to each other (small spread, small random error).</p><p><b>Accurate:</b> the measurements (or their mean) are close to the true value.</p>`},
+ {m:3,q:`<p>A student times one swing four times: 2.31 s, 2.35 s, 2.28 s, 2.36 s.</p><p>Calculate the mean, its absolute uncertainty and its percentage uncertainty.</p>`,a:`<div class="work">mean = 9.30/4 = 2.325 s
+range = 2.36 − 2.28 = 0.08 s → uncertainty = ±0.04 s
+% = 0.04/2.325 × 100</div><p class="final">2.33 ± 0.04 s, 1.7 %</p>`},
+ {m:2,q:`<p>An ammeter reads 0.02 A when no current flows. Name this type of error and say how to correct for it.</p>`,a:`<p class="final">Systematic error (a zero error).</p><p>Subtract 0.02 A from every reading, or reset the meter to zero before use. Repeating readings will not remove it.</p>`},
+ {m:2,q:`<p>Give two reasons for repeating measurements and calculating a mean.</p>`,a:`<ul><li>Reduces the effect of random errors.</li><li>Lets you spot and exclude anomalous readings.</li></ul><p>Also accepted: lets you estimate the uncertainty from the spread.</p>`},
+ {m:2,q:`<p>A length is measured with a metre rule marked in mm. Explain why the uncertainty is usually quoted as ±1 mm rather than ±0.5 mm.</p>`,a:`<p>A length needs two readings (the start and the end). Each has an uncertainty of ±0.5 mm (half the smallest division), and absolute uncertainties add: ±1 mm.</p>`}];
+
+/* ===== COMBINING ===== */
+topic({id:'combining',ref:'3.1.2',name:'Combining uncertainties',short:'Combining',eyebrow:'Uncertainty in calculated results',title:'Combining uncertainties',
+ intro:'Find the density of a metal cylinder from ρ = 4m / (πd²h). Change the uncertainty in each measurement and watch which one dominates.',
+ bar:'m = 52.0 g · d = 2.00 cm · h = 5.00 cm',aspect:0.5,minH:240,
+ controls:[{id:'cb-m',label:'Uncertainty in mass Δm',min:0.1,max:2,step:0.1,value:0.5,fmt:v=>'± '+fmt(v,1)+' g'},
+  {id:'cb-d',label:'Uncertainty in diameter Δd',min:0.01,max:0.2,step:0.01,value:0.02,fmt:v=>'± '+fmt(v)+' cm'},
+  {id:'cb-h',label:'Uncertainty in height Δh',min:0.01,max:0.2,step:0.01,value:0.05,fmt:v=>'± '+fmt(v)+' cm'}],
+ readouts:[{id:'cb-rho',label:'ρ = 4m / πd²h'},{id:'cb-tot',label:'total % uncertainty'},{id:'cb-abs',label:'result'}],status:true,
+ eqs:['add/subtract → add absolute','multiply/divide → add %','power n → n × %','constants: no uncertainty'],
+ steps:['Turn each measurement into a <b>percentage uncertainty</b>: (Δx ÷ x) × 100.','For a product or quotient, <b>add</b> the percentage uncertainties of every measured quantity.',
+  'For a quantity raised to a power, <b>multiply</b> its percentage uncertainty by the power. d² means 2 × %d; √x means ½ × %x.',
+  'For a sum or difference, add the <b>absolute</b> uncertainties, even when subtracting.','Convert back to an absolute uncertainty, round it to 1 or 2 s.f., then round the value to the same decimal place.'],
+ traps:['Subtracting uncertainties when the quantities are subtracted. Always add.','Forgetting to double the % for a squared quantity like d² or v².','Measuring radius instead of diameter: d is measured, r = d/2 has the same % uncertainty.'],
+ tryThis:'set Δd to ±0.10 cm. Which quantity now contributes most, and why does it count double?'});
+sims.combining={update(){const m=52,d=2,h=5,dm=num('cb-m'),dd=num('cb-d'),dh=num('cb-h');this.p=[dm/m*100,2*dd/d*100,dh/h*100];
+  const rho=4*m/(Math.PI*d*d*h),tot=this.p.reduce((a,b)=>a+b,0),abs=rho*tot/100;
+  $('cb-rho').textContent=fmt(rho,3)+' g cm⁻³';$('cb-tot').textContent=fmt(tot,1)+' %';$('cb-abs').textContent=`(${fmt(rho,2)} ± ${fmt(abs,2)}) g cm⁻³`;
+  const names=['mass','diameter (×2)','height'];const i=this.p.indexOf(Math.max(...this.p));
+  $('combining-status').innerHTML=`<b>Largest contribution: ${names[i]}.</b> Improve this measurement first to reduce the overall uncertainty.`;},
+ draw(ctx,w,h){bg(ctx,w,h);const p=this.p||[1,2,1];const rows=[['m','% m',p[0],C.accent],['d²','2 × % d',p[1],C.wave2],['h','% h',p[2],C.good]];
+  const tot=p.reduce((a,b)=>a+b,0),x0=110,x1=w-70,sc=(x1-x0)/Math.max(8,tot*1.05);const rh=Math.min(34,(h-40)/6);
+  rows.forEach((r,i)=>{const y=24+i*(rh+12);label(ctx,r[1],x0-10,y+rh/2,C.ink,'right',12);ctx.fillStyle=r[3];rrect(ctx,x0,y,Math.max(2,r[2]*sc),rh,4);ctx.fill();label(ctx,fmt(r[2],2)+' %',x0+r[2]*sc+8,y+rh/2,C.ink,'left',12)});
+  const y=24+3*(rh+12)+14;line(ctx,x0,y-8,x1,y-8,C.line,1);label(ctx,'total',x0-10,y+rh/2,C.ink,'right',12,700);let x=x0;
+  rows.forEach(r=>{ctx.fillStyle=r[3];ctx.fillRect(x,y,r[2]*sc,rh);x+=r[2]*sc});label(ctx,fmt(tot,2)+' %',x+8,y+rh/2,C.ink,'left',12,700);
+  label(ctx,'percentage uncertainty contributions',x0,h-12,C.muted,'left',10);}};
+Q.combining=[
+ {m:2,q:`<p>x = 4.0 ± 0.1 and y = 2.0 ± 0.1. State x + y and x − y with their uncertainties.</p>`,a:`<p class="final">x + y = 6.0 ± 0.2; x − y = 2.0 ± 0.2</p><p>Absolute uncertainties add for both sums and differences.</p>`},
+ {m:3,q:`<p>V = 6.0 ± 0.1 V and I = 0.50 ± 0.02 A. Calculate R = V/I with its absolute uncertainty.</p>`,a:`<div class="work">%V = 0.1/6.0 = 1.7 %
+%I = 0.02/0.50 = 4.0 %
+%R = 5.7 % ;  R = 12.0 Ω
+ΔR = 0.057 × 12.0 = 0.68 Ω</div><p class="final">R = 12.0 ± 0.7 Ω</p>`},
+ {m:2,q:`<p>Kinetic energy is calculated from E<sub>k</sub> = ½mv². m has a 2 % uncertainty and v a 3 % uncertainty. Find the % uncertainty in E<sub>k</sub>.</p>`,a:`<div class="work">%E = %m + 2 × %v = 2 + 2 × 3</div><p class="final">8 %</p><p>The ½ is exact, so it adds nothing.</p>`},
+ {m:3,q:`<p>A ball bearing has diameter 12.0 ± 0.1 mm. Calculate its volume (V = ⁴⁄₃πr³) with absolute uncertainty.</p>`,a:`<div class="work">%d = 0.1/12.0 = 0.83 % → %r = 0.83 %
+%V = 3 × 0.83 = 2.5 %
+V = ⁴⁄₃ π (6.0)³ = 905 mm³
+ΔV = 0.025 × 905 = 23 mm³</div><p class="final">V = (9.0 ± 0.2) × 10² mm³</p>`},
+ {m:2,q:`<p>A student finds T for 10 swings = 15.2 ± 0.2 s. State the period and its absolute uncertainty.</p>`,a:`<div class="work">T = 15.2/10 = 1.52 s
+ΔT = 0.2/10 = 0.02 s</div><p class="final">1.52 ± 0.02 s</p><p>Dividing by an exact number divides the absolute uncertainty too; the % stays 1.3 %.</p>`}];
+
+/* ===== GRAPHS ===== */
+topic({id:'graphs',ref:'3.1.2',name:'Graphs & gradients',short:'Graphs',eyebrow:'Uncertainty from graphs',title:'Best-fit and worst-fit lines',
+ intro:'Pendulum data plotted as T² against length. Change the error bars and compare the best-fit line with the worst acceptable line to find the uncertainty in g.',
+ bar:'T² = (4π²/g) l  → gradient = 4π²/g',aspect:0.62,minH:280,
+ controls:[{id:'gr-e',label:'Error bar size on T²',min:0.05,max:0.4,step:0.01,value:0.15,fmt:v=>'± '+fmt(v)+' s²'}],
+ checks:[{id:'gr-worst',label:'Show worst lines',checked:true}],
+ readouts:[{id:'gr-best',label:'best gradient'},{id:'gr-wst',label:'worst gradient'},{id:'gr-pu',label:'% uncertainty'},{id:'gr-g',label:'g = 4π² / gradient'}],
+ eqs:['% unc in gradient = |best − worst| ÷ best × 100','y = mx + c','log y = n log x + log k'],
+ steps:['Plot so the relationship is a <b>straight line</b>: T = 2π√(l/g) becomes T² = (4π²/g) l, so gradient = 4π²/g.','Draw <b>error bars</b> on each point. The <b>best-fit line</b> has points evenly scattered either side.',
+  'The <b>worst line</b> is the steepest (or shallowest) straight line that still passes through every error bar.','% uncertainty in the gradient = |best − worst| ÷ best × 100. The intercept uncertainty is the difference between the two intercepts.',
+  'For y = kxⁿ, plot log y against log x: the gradient is n and the intercept is log k.'],
+ traps:['Reading gradient from data points instead of from two widely spaced points on the line.','Forgetting units on the gradient (here s² m⁻¹).','Using a small triangle: use at least half the line.'],
+ tryThis:'double the error bars. What happens to the percentage uncertainty in g?'});
+sims.graphs=(()=>{const L=[0.2,0.35,0.5,0.65,0.8,0.95],off=[0.05,-0.07,0.04,0.06,-0.05,0.03],k=4*Math.PI**2/9.81,T2=L.map((l,i)=>k*l+off[i]);let fit={};
+ return{update(){const n=L.length,mx=L.reduce((a,b)=>a+b)/n,my=T2.reduce((a,b)=>a+b)/n;let sxy=0,sxx=0;L.forEach((x,i)=>{sxy+=(x-mx)*(T2[i]-my);sxx+=(x-mx)**2});
+   const m=sxy/sxx,c=my-m*mx,e=num('gr-e');const ms=((T2[n-1]+e)-(T2[0]-e))/(L[n-1]-L[0]),cs=(T2[0]-e)-ms*L[0];const ml=((T2[n-1]-e)-(T2[0]+e))/(L[n-1]-L[0]),cl=(T2[0]+e)-ml*L[0];
+   fit={m,c,ms,cs,ml,cl,e};const worst=Math.abs(ms-m)>Math.abs(ml-m)?ms:ml,pu=Math.abs(worst-m)/m*100,g=4*Math.PI**2/m;
+   $('gr-best').textContent=fmt(m,2)+' s² m⁻¹';$('gr-wst').textContent=fmt(worst,2)+' s² m⁻¹';$('gr-pu').textContent=fmt(pu,1)+' %';$('gr-g').textContent=`${fmt(g,2)} ± ${fmt(g*pu/100,2)} m s⁻²`;},
+  draw(ctx,w,h){bg(ctx,w,h);const P=Plot(ctx,{x:50,y:28,w:w-80,h:h-70},[0,1],[0,4.5]);P.axes('l / m','T² / s²',[0.2,0.4,0.6,0.8,1.0],[1,2,3,4],v=>v.toFixed(1),v=>v);
+   const f=fit;P.curve(x=>f.m*x+f.c,C.accent,2,0,1);
+   if($('gr-worst').checked){ctx.setLineDash([6,5]);P.curve(x=>f.ms*x+f.cs,C.wave2,1.6,0,1);P.curve(x=>f.ml*x+f.cl,C.wave2,1.6,0,1);ctx.setLineDash([]);label(ctx,'worst lines',P.X(0.98),P.Y(f.ms*0.98+f.cs)-12,C.wave2,'right',10)}
+   label(ctx,'best fit',P.X(0.9)+8,P.Y(f.m*0.9+f.c)+16,C.accent,'right',10);
+   L.forEach((x,i)=>{const X=P.X(x);line(ctx,X,P.Y(T2[i]-f.e),X,P.Y(T2[i]+f.e),C.ink,1.4);line(ctx,X-4,P.Y(T2[i]-f.e),X+4,P.Y(T2[i]-f.e),C.ink,1.4);line(ctx,X-4,P.Y(T2[i]+f.e),X+4,P.Y(T2[i]+f.e),C.ink,1.4);
+    line(ctx,X-4,P.Y(T2[i])-4,X+4,P.Y(T2[i])+4,C.ink,2);line(ctx,X-4,P.Y(T2[i])+4,X+4,P.Y(T2[i])-4,C.ink,2)});}}})();
+Q.graphs=[
+ {m:2,q:`<p>Explain why a student plots T² against l, rather than T against l, to find g from a simple pendulum.</p>`,a:`<p>T² = (4π²/g) l is of the form y = mx: a straight line through the origin. The gradient is 4π²/g, so g = 4π²/gradient. T against l would be a curve.</p>`},
+ {m:3,q:`<p>A best-fit line has gradient 4.05 s² m⁻¹ and the worst line 4.30 s² m⁻¹. Find g and its absolute uncertainty.</p>`,a:`<div class="work">% unc = (4.30 − 4.05)/4.05 = 6.2 %
+g = 4π²/4.05 = 9.75 m s⁻²
+Δg = 0.062 × 9.75 = 0.60</div><p class="final">g = 9.7 ± 0.6 m s⁻²</p>`},
+ {m:2,q:`<p>Describe how to draw a worst acceptable line on a graph with error bars.</p>`,a:`<p>Draw the steepest (or shallowest) straight line that still passes through <b>every</b> error bar, typically from the top of the first bar to the bottom of the last (or the reverse).</p>`},
+ {m:3,q:`<p>A quantity follows y = kxⁿ. A graph of log<sub>10</sub> y against log<sub>10</sub> x has gradient 1.50 and y-intercept 0.30. Find n and k.</p>`,a:`<div class="work">log y = n log x + log k
+n = gradient = 1.50
+log k = 0.30 → k = 10^0.30</div><p class="final">n = 1.5, k = 2.0</p>`}];
+
+/* ===== UNITS ===== */
+const BASE=['kg','m','s','A','K','mol'];
+const QUANT={'Force (N)':[1,1,-2],'Energy (J)':[1,2,-2],'Power (W)':[1,2,-3],'Pressure / stress (Pa)':[1,-1,-2],'Momentum':[1,1,-1],'Charge (C)':[0,0,1,1],'Potential difference (V)':[1,2,-3,-1],
+ 'Resistance (Ω)':[1,2,-3,-2],'Resistivity (Ω m)':[1,3,-3,-2],'Capacitance (F)':[-1,-2,4,2],'Magnetic flux density (T)':[1,0,-2,-1],'Specific heat capacity':[0,2,-2,0,-1],'Gravitational constant G':[-1,3,-2],'Planck constant h':[1,2,-1]};
+const EQNS=[
+ ['E = ½mv²',[['E','J','kg m² s⁻²'],['½mv²','kg × (m s⁻¹)²','kg m² s⁻²']],true],
+ ['s = ut + ½at²',[['s','m','m'],['ut','m s⁻¹ × s','m'],['½at²','m s⁻² × s²','m']],true],
+ ['s = ut + at',[['s','m','m'],['ut','m s⁻¹ × s','m'],['at','m s⁻² × s','m s⁻¹']],false],
+ ['v = √(T/μ)',[['v','m s⁻¹','m s⁻¹'],['√(T/μ)','√(kg m s⁻² ÷ kg m⁻¹)','m s⁻¹']],true],
+ ['P = I²R',[['P','W','kg m² s⁻³'],['I²R','A² × kg m² s⁻³ A⁻²','kg m² s⁻³']],true],
+ ['F = BIl',[['F','N','kg m s⁻²'],['BIl','kg s⁻² A⁻¹ × A × m','kg m s⁻²']],true],
+ ['p = mv²',[['p','kg m s⁻¹','kg m s⁻¹'],['mv²','kg × m² s⁻²','kg m² s⁻²']],false],
+ ['T = 2π√(l/g)',[['T','s','s'],['2π√(l/g)','√(m ÷ m s⁻²)','s']],true],
+ ['F = Gm₁m₂/r',[['F','N','kg m s⁻²'],['Gm₁m₂/r','kg⁻¹ m³ s⁻² × kg² ÷ m','kg m² s⁻²']],false]];
+topic({id:'units',ref:'3.1.1',name:'SI units & homogeneity',short:'Units',eyebrow:'Use of SI units and their prefixes',title:'Base units and homogeneity',
+ intro:'Pick a derived quantity to see its SI base units, then check whether an equation is homogeneous (the same base units on both sides).',
+ bar:'powers of each SI base unit',aspect:0.42,minH:200,
+ extra:`<div class="row"><label for="u-q">Quantity</label><select id="u-q">${Object.keys(QUANT).map(k=>`<option>${k}</option>`).join('')}</select></div>
+ <div class="row"><label for="u-eq">Equation</label><select id="u-eq">${EQNS.map((e,i)=>`<option value="${i}">${e[0]}</option>`).join('')}</select></div>
+ <div class="tblwrap"><table class="mini" id="u-tab"></table></div>`,
+ readouts:[{id:'u-base',label:'in base units',wide:true}],status:true,
+ eqTitle:'The six AQA base units',eqs:['mass kg','length m','time s','current A','temperature K','amount mol'],
+ steps:['Every other unit is <b>derived</b> from the six base units. Work from a defining equation: F = ma gives N = kg m s⁻².',
+  'Build up step by step: J = N m, W = J s⁻¹, C = A s, V = W A⁻¹, Ω = V A⁻¹.','An equation is <b>homogeneous</b> if every term (each side of =, and each term in a sum) has the same base units.',
+  'Homogeneity is necessary but <b>not sufficient</b>: it can\'t check dimensionless numbers like ½ or 2π, or missing terms.',
+  'Prefixes: T 10¹², G 10⁹, M 10⁶, k 10³, c 10⁻², m 10⁻³, μ 10⁻⁶, n 10⁻⁹, p 10⁻¹², f 10⁻¹⁵.'],
+ traps:['Treating the newton or joule as base units.','Squaring a prefix incorrectly: 1 cm² = 10⁻⁴ m², not 10⁻² m².','Forgetting that radians, ½ and π have no units.'],
+ tryThis:'find the equation that is homogeneous on the first two terms but not the third.'});
+sims.units={init(){['u-q','u-eq'].forEach(i=>$(i).addEventListener('change',()=>this.update()))},
+ update(){const k=$('u-q').value,v=QUANT[k];this.v=v;this.k=k;
+  $('u-base').textContent=BASE.map((b,i)=>v[i]?b+(v[i]!==1?String(v[i]).replace('-','⁻').replace(/\d/g,c=>SUP[c]):''):'').filter(Boolean).join(' ');
+  const e=EQNS[+$('u-eq').value];$('u-tab').innerHTML='<tr><th>term</th><th>units</th><th>base units</th></tr>'+e[1].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  $('units-status').innerHTML=e[2]?`<span class="ok">Homogeneous.</span> Every term has the same base units.`:`<span class="bad">Not homogeneous.</span> At least one term has different base units, so the equation must be wrong.`;},
+ draw(ctx,w,h){bg(ctx,w,h);const v=this.v||[];const cw=(w-60)/6,mid=h*0.52,u=Math.min(26,(h*0.4)/4);line(ctx,30,mid,w-30,mid,C.muted,1);
+  BASE.forEach((b,i)=>{const x=30+cw*i+cw/2,e=v[i]||0;if(e){ctx.fillStyle=e>0?C.accent:C.wave2;ctx.fillRect(x-cw*0.28,e>0?mid-e*u:mid,cw*0.56,Math.abs(e)*u);
+   label(ctx,(e>0?'+':'')+e,x,e>0?mid-e*u-10:mid-e*u+10,C.ink,'center',12,700)}label(ctx,b,x,h-14,C.ink,'center',13,700)});
+  label(ctx,this.k||'',36,16,C.muted,'left',11);}};
+Q.units=[
+ {m:2,q:`<p>Express the volt in SI base units.</p>`,a:`<div class="work">V = W A⁻¹ = J s⁻¹ A⁻¹ = (kg m² s⁻²) s⁻¹ A⁻¹</div><p class="final">kg m² s⁻³ A⁻¹</p>`},
+ {m:2,q:`<p>Show that E = mc² is homogeneous.</p>`,a:`<div class="work">LHS: J = kg m² s⁻²
+RHS: kg × (m s⁻¹)² = kg m² s⁻²</div><p>Both sides have the same base units.</p>`},
+ {m:2,q:`<p>Air resistance on a car is F = kv². Find the SI base units of k.</p>`,a:`<div class="work">k = F/v² = kg m s⁻² ÷ m² s⁻²</div><p class="final">kg m⁻¹</p>`},
+ {m:1,q:`<p>Explain why an equation that is homogeneous might still be wrong.</p>`,a:`<p>Dimensionless constants (like ½ or 2π) cannot be checked by units, and terms could be missing.</p>`},
+ {m:2,q:`<p>Write 0.000 064 7 kg in standard form, and in mg.</p>`,a:`<p class="final">6.47 × 10⁻⁵ kg = 64.7 mg</p>`}];
+
+/* ===== MICROMETER ===== */
+topic({id:'micrometer',ref:'Practical skills',name:'Reading a micrometer',short:'Micrometer',eyebrow:'Use of instruments',title:'Reading a micrometer screw gauge',
+ intro:'Read the micrometer, type your answer in millimetres, and check it. Add a zero error to practise correcting for it.',
+ bar:'resolution 0.01 mm',aspect:0.48,minH:220,
+ checks:[{id:'mi-zero',label:'Include a zero error'}],
+ extra:`<div class="row"><label for="mi-ans">Your corrected reading (mm)</label><input type="number" id="mi-ans" step="0.01" min="0" max="25" style="width:110px"><button class="btn" type="button" id="mi-check">Check</button><button class="btn alt" type="button" id="mi-new">New reading</button><button class="ghost" type="button" id="mi-show">Reveal</button></div>`,
+ status:true,
+ eqTitle:'Reading',eqs:['reading = sleeve (mm and ½ mm) + thimble × 0.01 mm','true value = reading − zero error'],
+ steps:['Read the <b>sleeve</b>: the last whole millimetre line visible above the datum line.','Check for a <b>half-millimetre</b> line visible below the datum line after it. If one shows, add 0.50 mm.',
+  'Read the <b>thimble</b> division lined up with the datum line and multiply by 0.01 mm.','Add them: e.g. 7 + 0.50 + 0.28 = 7.78 mm.',
+  'Close the jaws first to find any <b>zero error</b>. Subtract it from every reading (a negative zero error is added).','Use the ratchet so you don\'t over-tighten, and measure a wire at several points and orientations.'],
+ traps:['Missing the half-millimetre line.','Adding a positive zero error instead of subtracting it.','Recording 7.8 mm instead of 7.80 mm: give readings to the instrument\'s resolution.'],
+ tryThis:'get three readings right in a row, then turn on the zero error.'});
+sims.micrometer=(()=>{let R=7.78,Z=0;
+ function fresh(){R=(Math.floor(Math.random()*2400)+50)/100;Z=$('mi-zero').checked?[3,-2,4,-3,2,5][Math.floor(Math.random()*6)]/100:0;
+  $('micrometer-bar').textContent=Z?`with the jaws closed the gauge reads ${Z>0?'+':''}${fmt(Z)} mm`:'resolution 0.01 mm · no zero error';$('mi-ans').value='';
+  $('micrometer-status').innerHTML='Read the scale and enter your answer.';}
+ return{init(){fresh();$('mi-new').addEventListener('click',fresh);$('mi-zero').addEventListener('change',fresh);
+   $('mi-check').addEventListener('click',()=>{const a=parseFloat($('mi-ans').value),t=R-Z;if(isNaN(a)){$('micrometer-status').innerHTML='Type a reading first.';return}
+     $('micrometer-status').innerHTML=Math.abs(a-t)<0.005?`<span class="ok">Correct: ${fmt(t)} mm.</span>`:`<span class="bad">Not quite.</span> Check the half-millimetre line${Z?' and the zero error':''}, then try again.`});
+   $('mi-show').addEventListener('click',()=>{const s=Math.floor(R*2)/2,th=Math.round((R-s)*100);$('micrometer-status').innerHTML=`Sleeve ${fmt(s)} mm + thimble ${th} × 0.01 = ${fmt(R)} mm${Z?` ; minus zero error (${fmt(Z)}) = <b>${fmt(R-Z)} mm</b>`:''}.`});},
+  draw(ctx,w,h){bg(ctx,w,h,false);const edge=w*0.6,dy=h*0.5,k=Math.min(26,w/26),sh=h*0.34;
+   ctx.fillStyle=C.paper;ctx.fillRect(20,dy-sh/2,edge-20,sh);ctx.strokeStyle=C.muted;ctx.strokeRect(20,dy-sh/2,edge-20,sh);
+   line(ctx,20,dy,edge,dy,C.ink,1.5);
+   for(let v=0;v<=R+1e-9;v+=0.5){const x=edge-(R-v)*k;if(x<24)continue;const whole=Math.abs(v-Math.round(v))<1e-6;
+    if(whole){line(ctx,x,dy,x,dy-sh*0.28,C.ink,1.5);if(Math.round(v)%5===0)label(ctx,String(Math.round(v)),x,dy-sh*0.28-10,C.ink,'center',12,700)}else line(ctx,x,dy,x,dy+sh*0.22,C.ink,1.5)}
+   const tw=w*0.28,th=h*0.78;const g=ctx.createLinearGradient(0,dy-th/2,0,dy+th/2);g.addColorStop(0,C.line);g.addColorStop(0.5,C.surface);g.addColorStop(1,C.line);
+   ctx.fillStyle=g;rrect(ctx,edge,dy-th/2,tw,th,6);ctx.fill();ctx.strokeStyle=C.muted;ctx.stroke();
+   const frac=(R-Math.floor(R*2)/2)*100,sp=th/16;
+   for(let n=Math.floor(frac)-9;n<=Math.ceil(frac)+9;n++){const y=dy-(n-frac)*sp;if(y<dy-th/2+4||y>dy+th/2-4)continue;const nn=((n%50)+50)%50;const long=nn%5===0;
+    line(ctx,edge,y,edge+(long?tw*0.32:tw*0.2),y,C.ink,1.3);if(long)label(ctx,String(nn),edge+tw*0.32+8,y,C.ink,'left',12,700)}
+   label(ctx,'sleeve',30,dy+sh/2+14,C.muted,'left',10);label(ctx,'thimble',edge+tw/2,dy+th/2+12,C.muted,'center',10);label(ctx,'datum line',30,dy-8,C.muted,'left',9);}}})();
+Q.micrometer=[
+ {m:1,q:`<p>The sleeve shows 7 mm with the half-millimetre line visible. The thimble reads 28. What is the reading?</p>`,a:`<div class="work">7 + 0.50 + 0.28</div><p class="final">7.78 mm</p>`},
+ {m:2,q:`<p>A micrometer reads +0.04 mm with its jaws closed. It then reads 3.62 mm on a wire. What is the diameter?</p>`,a:`<div class="work">3.62 − 0.04</div><p class="final">3.58 mm</p>`},
+ {m:2,q:`<p>Why should the diameter of a wire be measured at several places along it and in different orientations?</p>`,a:`<p>The wire may not be uniform or perfectly circular. Taking a mean of several readings reduces the effect of random errors and variation.</p>`},
+ {m:2,q:`<p>A wire's diameter is 0.38 mm, measured to a resolution of 0.01 mm. Find the % uncertainty in its cross-sectional area.</p>`,a:`<div class="work">%d = 0.01/0.38 = 2.6 %
+A ∝ d² → %A = 2 × 2.6</div><p class="final">5.3 %</p>`}];
+
+/* ===== PRACTICE ===== */
+Q.practice=[
+ {t:'units mc',m:1,q:`<p>Which of these is <b>not</b> an SI base unit?</p><ol class="opts"><li>kelvin</li><li>ampere</li><li>coulomb</li><li>mole</li></ol>`,a:`<p class="final">C</p><p>The coulomb is derived: C = A s.</p>`},
+ {t:'units mc',m:1,q:`<p>What are the SI base units of power?</p><ol class="opts"><li>kg m s⁻²</li><li>kg m² s⁻²</li><li>kg m² s⁻³</li><li>kg m² s⁻¹</li></ol>`,a:`<p class="final">C</p><p>W = J s⁻¹ = kg m² s⁻² s⁻¹.</p>`},
+ {t:'errors',m:3,q:`<p>The time for 20 oscillations is 31.4 s. Reaction time gives an uncertainty of ±0.2 s. Find the period, its absolute and % uncertainty, and explain why 20 oscillations were timed.</p>`,a:`<div class="work">T = 31.4/20 = 1.57 s
+ΔT = 0.2/20 = 0.01 s ; % = 0.64 %</div><p>Timing many oscillations makes the fixed reaction-time uncertainty a smaller fraction of the total time.</p>`},
+ {t:'combining',m:2,q:`<p>A rectangle measures (25.0 ± 0.1) cm by (12.0 ± 0.1) cm. Calculate its area with absolute uncertainty.</p>`,a:`<div class="work">% = 0.40 + 0.83 = 1.23 %
+A = 300 cm² ; ΔA = 3.7 cm²</div><p class="final">(300 ± 4) cm²</p>`},
+ {t:'combining mc',m:1,q:`<p>X = a²b/c. The percentage uncertainties are a: 1 %, b: 2 %, c: 3 %. What is the % uncertainty in X?</p><ol class="opts"><li>6 %</li><li>7 %</li><li>4 %</li><li>2 %</li></ol>`,a:`<p class="final">B</p><div class="work">2 × 1 + 2 + 3 = 7 %</div>`},
+ {t:'combining',m:4,q:`<p>A steel wire: diameter 0.40 ± 0.01 mm, length 2.000 ± 0.002 m, load 50.0 ± 0.5 N, extension 6.0 ± 0.1 mm.</p><ol type="a"><li>Calculate the Young modulus E = FL/(Ae) and its uncertainty.</li><li>State which measurement contributes most.</li></ol>`,a:`<div class="work">A = π(0.20×10⁻³)² = 1.257 × 10⁻⁷ m²
+E = 50.0 × 2.000 / (1.257×10⁻⁷ × 6.0×10⁻³) = 1.33 × 10¹¹ Pa
+% = 2×2.5 + 0.1 + 1.0 + 1.7 = 7.8 %</div><p class="final">(a) (1.3 ± 0.1) × 10¹¹ Pa  (b) the diameter (5 %)</p>`},
+ {t:'errors',m:2,q:`<p>Estimate the order of magnitude of the number of times a human heart beats in a lifetime.</p>`,a:`<div class="work">70 min⁻¹ × 60 × 24 × 365 × 80 ≈ 2.9 × 10⁹</div><p class="final">~10⁹</p>`},
+ {t:'errors',m:2,q:`<p>Give one example of a random error and one of a systematic error in an experiment to measure the resistance of a wire.</p>`,a:`<p><b>Random:</b> fluctuating meter readings, or variation in diameter readings along the wire.</p><p><b>Systematic:</b> a zero error on the micrometer or meter, or the wire heating up and its resistance increasing for every reading.</p>`},
+ {t:'graphs',m:2,q:`<p>For planets, a graph of log T against log r has gradient 1.50. What does this show about T and r?</p>`,a:`<p class="final">T ∝ r^1.5 (T² ∝ r³)</p><p>For y = kxⁿ, the log–log gradient is n.</p>`},
+ {t:'graphs mc',m:1,q:`<p>The % uncertainty in a gradient found from a graph is:</p><ol class="opts"><li>|best − worst| ÷ worst × 100</li><li>|best − worst| ÷ best × 100</li><li>worst ÷ best × 100</li><li>the % uncertainty of the largest data point</li></ol>`,a:`<p class="final">B</p>`},
+ {t:'units',m:2,q:`<p>Find the SI base units of the Planck constant.</p>`,a:`<div class="work">h = E/f = kg m² s⁻² ÷ s⁻¹</div><p class="final">kg m² s⁻¹</p>`},
+ {t:'units',m:2,q:`<p>The speed of deep-water waves is v = √(gλ/2π). Show the equation is homogeneous.</p>`,a:`<div class="work">gλ: m s⁻² × m = m² s⁻²
+√(m² s⁻²) = m s⁻¹ ; 2π has no units</div><p>Same as the units of v.</p>`},
+ {t:'units',m:1,q:`<p>Write 0.0035 μF in pF.</p>`,a:`<div class="work">0.0035 × 10⁻⁶ F = 3.5 × 10⁻⁹ F</div><p class="final">3500 pF</p>`},
+ {t:'errors',m:3,q:`<p>Two students measure g. A gets 9.6 ± 0.1 m s⁻², B gets 9.9 ± 0.4 m s⁻². Which is more precise and which more accurate? Comment on A's result.</p>`,a:`<p>A is more precise (smaller uncertainty). B is accurate: its range 9.5–10.3 includes 9.81. A's range 9.5–9.7 does not include 9.81, suggesting a <b>systematic error</b> in A's method.</p>`},
+ {t:'errors',m:1,q:`<p>A result of 9.62 m s⁻² is compared with 9.81 m s⁻². Find the % difference.</p>`,a:`<div class="work">(9.81 − 9.62)/9.81 × 100</div><p class="final">1.9 %</p>`},
+ {t:'micrometer mc',m:1,q:`<p>A micrometer sleeve shows 12 mm with no half-millimetre line visible. The thimble shows 41. The reading is:</p><ol class="opts"><li>12.41 mm</li><li>12.91 mm</li><li>12.041 mm</li><li>16.1 mm</li></ol>`,a:`<p class="final">A</p>`},
+ {t:'micrometer',m:1,q:`<p>A vernier caliper (resolution 0.1 mm) shows 23 mm on the main scale with the 7th vernier line aligned. What is the reading?</p>`,a:`<p class="final">23.7 mm</p>`},
+ {t:'graphs',m:2,q:`<p>From one graph, the gradients of the steepest and shallowest acceptable lines are 0.56 and 0.47; the best line is 0.52. Estimate the % uncertainty in the gradient.</p>`,a:`<div class="work">½ × (0.56 − 0.47) = 0.045
+0.045/0.52 × 100</div><p class="final">≈ 9 %</p>`},
+ {t:'errors',m:2,q:`<p>Estimate the kinetic energy of a family car travelling on a motorway, to an order of magnitude.</p>`,a:`<div class="work">m ≈ 1500 kg, v ≈ 30 m s⁻¹
+E = ½ × 1500 × 30² ≈ 7 × 10⁵ J</div><p class="final">~10⁶ J</p>`},
+ {t:'graphs extended',m:6,q:`<p>Describe how you would determine g accurately using a simple pendulum. Include how you would reduce uncertainties and how you would analyse your results.</p>`,a:`<p><b>Level 3 answer covers:</b></p><ul><li>Pendulum clamped; length l measured from the pivot to the centre of the bob with a metre rule (eye level to avoid parallax).</li><li>Small amplitude (< 10°); time 10–20 oscillations from the centre using a fiducial marker; repeat and average.</li><li>Vary l over 5+ values (e.g. 0.20–1.00 m).</li><li>Plot T² against l; straight line through origin; g = 4π²/gradient.</li><li>Uncertainty from best and worst lines; any systematic error in l shows as a non-zero intercept but doesn't affect the gradient.</li></ul>`},
+ {t:'errors extended',m:6,q:`<p>Explain the difference between random and systematic errors. Describe how each can be identified and reduced, using examples from experiments you have carried out.</p>`,a:`<p><b>Level 3 answer covers:</b></p><ul><li>Random: unpredictable scatter either side of the true value; shown by spread of repeats; reduced by repeating and averaging, larger measurements (timing many swings), better resolution, data loggers.</li><li>Systematic: every reading shifted the same way; not shown by spread; found by comparing with known values or a non-zero graph intercept; reduced by zeroing instruments, calibration, avoiding parallax.</li><li>Relevant examples, e.g. reaction time in timing (random), micrometer zero error (systematic).</li><li>Links: random affects precision, systematic affects accuracy.</li></ul>`}];
+
+/* ---------- build page ---------- */
+(function build(){
+  const S=SECTION;
+  const ctlHTML=c=>`<div class="ctl"><label for="${c.id}">${c.label} <output id="${c.id}-o"></output></label><input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}"></div>`;
+  const segHTML=s=>`<div class="seg" id="${s.id}">${s.opts.map((o,i)=>`<button type="button" aria-pressed="${i===(s.sel||0)}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+  const chkHTML=c=>`<label class="check"><input type="checkbox" id="${c.id}"${c.checked?' checked':''}> ${c.label}</label>`;
+  const panel=t=>`
+<section class="panel" role="tabpanel" data-panel="${t.id}" hidden>
+  <div class="panel-head"><div><div class="eyebrow">${t.eyebrow}</div><h2>${t.title}</h2><p>${t.intro}</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span id="${t.id}-bar">${t.bar||''}</span>${t.animated?`<button class="pause" type="button" data-pause="${t.id}">Pause</button>`:''}</div>
+      <canvas id="c-${t.id}" aria-label="${t.canvasLabel||t.title}"></canvas>
+      ${(t.segs||t.checks)?`<div class="toggles">${(t.segs||[]).map(segHTML).join('')}${(t.checks||[]).map(chkHTML).join('')}</div>`:''}
+      ${t.controls?`<div class="controls">${t.controls.map(ctlHTML).join('')}</div>`:''}
+      ${t.extra?`<div class="extra">${t.extra}</div>`:''}
+      ${t.readouts?`<dl class="readout">${t.readouts.map(r=>`<div${r.wide?' style="grid-column:1/-1"':''}><dt>${r.label}</dt><dd id="${r.id}"></dd></div>`).join('')}</dl>`:''}
+      ${t.status?`<div class="status" id="${t.id}-status"></div>`:''}
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>${t.eqTitle||'Key equations'}</h3><div class="eq">${t.eqs.map(e=>`<span>${e}</span>`).join('')}</div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">${t.steps.map(s=>`<li><div>${s}</div></li>`).join('')}</ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>${t.traps.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      ${t.tryThis?`<p class="try"><b>Try this:</b> ${t.tryThis}</p>`:''}
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: ${t.name.toLowerCase()}</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="${t.id}"></div>
+</section>`;
+  const chips=[['all','All'],['mc','Multiple choice'],...TOPICS.map(t=>[t.id,t.short||t.name]),['extended','6-mark']];
+  document.getElementById('app').innerHTML=`
+<div class="wrap"><header class="top">
+  <div class="eyebrow">AQA A-level Physics 7408 · ${S.code}</div>
+  <h1>${S.title}</h1><p class="lede">${S.lede}</p></header></div>
+<nav class="tabs" aria-label="Topics"><div class="wrap"><div class="tabrow" role="tablist" id="tablist">
+  ${TOPICS.map(t=>`<button class="tab" type="button" role="tab" data-tab="${t.id}"><span class="ref">${t.ref}</span><span class="nm">${t.name}</span></button>`).join('')}
+  <button class="tab practice" type="button" role="tab" data-tab="practice"><span class="ref">Mixed</span><span class="nm">Exam practice</span></button>
+</div></div></nav>
+<main class="wrap">
+${TOPICS.map(panel).join('')}
+<section class="panel" role="tabpanel" data-panel="practice" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Mixed exam-style questions</div><h2>Exam practice</h2>
+  <p>A-level style questions across ${S.name}: multiple choice, calculations, explanations and extended response. Write your answer down first, then turn the card over to mark it.</p></div></div>
+  <div class="filters" id="filters">${chips.map((c,i)=>`<button class="chip" type="button" aria-pressed="${i===0}" data-f="${c[0]}">${c[1]}</button>`).join('')}
+    <span class="tally" id="tally"></span><button class="ghost" type="button" id="reset">Turn all cards back</button></div>
+  <div class="qgrid" data-qset="practice"></div>
+</section>
+</main>
+<div class="wrap"><footer>${S.footer||'Built for AQA 7408 revision. Data and formulae as on the AQA data and formulae booklet.'}</footer></div>`;
+})();
+
+/* ---------- question cards ---------- */
+function card(item,idx,lab){
+  const el=document.createElement('article');el.className='qcard';el.dataset.tags=item.t||'';
+  el.innerHTML=`<div class="qmeta"><span class="side">${lab} ${idx+1}</span><span class="mk">${item.m} mark${item.m>1?'s':''}</span></div>
+    <div class="qbody front">${item.q}</div>
+    <div class="qbody ans back" hidden><div class="tagline" style="margin-bottom:6px">Answer</div>${item.a}</div>
+    <button class="flip" type="button">Show answer</button>`;
+  const btn=el.querySelector('.flip'),front=el.querySelector('.front'),back=el.querySelector('.back'),side=el.querySelector('.side');
+  btn.addEventListener('click',()=>{const show=back.hidden;back.hidden=!show;front.hidden=show;el.classList.toggle('flipped',show);
+    btn.textContent=show?'Back to question':'Show answer';side.textContent=(show?'Answer ':lab+' ')+(idx+1);});
+  return el;}
+document.querySelectorAll('[data-qset]').forEach(g=>{const set=g.dataset.qset;(Q[set]||[]).forEach((it,i)=>g.appendChild(card(it,i,set==='practice'?'P':'Q')))});
+const pgrid=document.querySelector('[data-qset="practice"]');
+function applyFilter(f){let n=0,marks=0;pgrid.querySelectorAll('.qcard').forEach((c,i)=>{const show=f==='all'||c.dataset.tags.split(' ').includes(f);c.hidden=!show;if(show){n++;marks+=Q.practice[i].m}});
+  $('tally').textContent=`${n} questions · ${marks} marks`;}
+$('filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));applyFilter(b.dataset.f)});
+$('reset').addEventListener('click',()=>pgrid.querySelectorAll('.qcard.flipped .flip').forEach(b=>b.click()));
+applyFilter('all');
+
+/* ---------- theme ---------- */
+readTokens();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTokens)}catch(e){}
+new MutationObserver(readTokens).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});
+
+/* ---------- wire controls ---------- */
+TOPICS.forEach(t=>{const s=sims[t.id]||{};const upd=()=>{(t.controls||[]).forEach(c=>setOut(c.id,c.fmt?c.fmt(+$(c.id).value):$(c.id).value));s.update&&s.update()};
+  (t.controls||[]).forEach(c=>$(c.id).addEventListener('input',upd));
+  (t.checks||[]).forEach(c=>$(c.id).addEventListener('change',upd));
+  (t.segs||[]).forEach(sg=>$(sg.id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setSeg(sg.id,b.dataset.v);s.onSeg&&s.onSeg(sg.id,b.dataset.v);upd()}));
+  s.init&&s.init();upd();t._upd=upd;});
+
+/* ---------- tabs + animation ---------- */
+const tabs=[...document.querySelectorAll('.tab')];let active=TOPICS[0].id;const times={},paused={};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function show(id,push){if(!document.querySelector(`[data-panel="${id}"]`))id=TOPICS[0].id;active=id;
+  tabs.forEach(t=>{const on=t.dataset.tab===id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.panel!==id);
+  if(push&&location.hash!=='#'+id){try{history.replaceState(null,'','#'+id)}catch(e){}}
+  const t=tabs.find(t=>t.dataset.tab===id);t&&t.scrollIntoView({block:'nearest',inline:'nearest'});
+  drawActive();}
+tabs.forEach(t=>t.addEventListener('click',()=>{show(t.dataset.tab,true);window.scrollTo({top:0})}));
+$('tablist').addEventListener('keydown',e=>{const i=tabs.findIndex(t=>t.dataset.tab===active);let j=i;
+  if(e.key==='ArrowRight')j=(i+1)%tabs.length;else if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;else return;
+  e.preventDefault();show(tabs[j].dataset.tab,true);tabs[j].focus();});
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+document.querySelectorAll('[data-pause]').forEach(b=>{const k=b.dataset.pause;paused[k]=reduce;b.textContent=reduce?'Play':'Pause';
+  b.addEventListener('click',()=>{paused[k]=!paused[k];b.textContent=paused[k]?'Play':'Pause'})});
+function drawActive(){const s=sims[active],t=TOPICS.find(x=>x.id===active);if(!s||!s.draw)return;const cv=$('c-'+active);
+  const{ctx,w,h}=sizeCanvas(cv,t.aspect||0.55,t.minH||240);s.draw(ctx,w,h,times[active]||0);}
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const s=sims[active],t=TOPICS.find(x=>x.id===active);
+  if(s&&t){if(t.animated&&!paused[active]){times[active]=(times[active]||0)+dt;s.step&&s.step(dt,times[active])}drawActive()}
+  requestAnimationFrame(loop)}
+show(location.hash.slice(1)||TOPICS[0].id);requestAnimationFrame(loop);
+
+</script>
+
+</body></html>
